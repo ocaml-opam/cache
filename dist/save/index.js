@@ -1175,9 +1175,9 @@ function getVersion(app) {
     });
 }
 // Use zstandard if possible to maximize cache performance
-function getCompressionMethod() {
+function getCompressionMethod(forceGzip) {
     return __awaiter(this, void 0, void 0, function* () {
-        if (process.platform === 'win32' && !(yield isGnuTarInstalled())) {
+        if (forceGzip || process.platform === 'win32' && !(yield isGnuTarInstalled())) {
             // Disable zstd due to bug https://github.com/actions/cache/issues/301
             return constants_1.CompressionMethod.Gzip;
         }
@@ -47310,9 +47310,10 @@ function run() {
             const cachePaths = utils.getInputAsArray(constants_1.Inputs.Path, {
                 required: true
             });
+            const forceGzip = (core.getInput('force-gzip') || 'false').toUpperCase() === 'TRUE';
             const cacheId = yield cache.saveCache(cachePaths, primaryKey, {
                 uploadChunkSize: utils.getInputAsInt(constants_1.Inputs.UploadChunkSize)
-            });
+            }, forceGzip);
             if (cacheId != -1) {
                 core.info(`Cache saved with key: ${primaryKey}`);
             }
@@ -47508,12 +47509,12 @@ exports.restoreCache = restoreCache;
  * @param options cache upload options
  * @returns number returns cacheId if the cache was saved successfully and throws an error if save fails
  */
-function saveCache(paths, key, options) {
+function saveCache(paths, key, options, forceGzip) {
     var _a, _b, _c, _d, _e;
     return __awaiter(this, void 0, void 0, function* () {
         checkPaths(paths);
         checkKey(key);
-        const compressionMethod = yield utils.getCompressionMethod();
+        const compressionMethod = yield utils.getCompressionMethod(forceGzip);
         let cacheId = -1;
         const cachePaths = yield utils.resolvePaths(paths);
         core.debug('Cache Paths:');

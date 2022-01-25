@@ -17,6 +17,9 @@ inputs:
   check-only:
     description: 'A boolean flag controlling whether the cache is downloaded on a hit'
     required: false
+  force-gzip:
+    description: 'A boolean flag controlling whether zstd may be used'
+    required: false
 outputs:
   cache-hit:
     description: 'A boolean value to indicate an exact match was found for the primary key'
